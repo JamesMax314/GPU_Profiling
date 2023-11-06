@@ -13,7 +13,7 @@ int main()
 {
     // Used for timing
     const int N_samples = 1e4;
-    float time[N_samples];
+    float time[N_samples]; // in ms
     cudaEvent_t start[N_samples];
     cudaEvent_t stop[N_samples];
 
@@ -74,8 +74,8 @@ int main()
     for (int i=0; i<N_samples; i++) 
     {
         CUDA_SAFE_CALL( cudaEventElapsedTime(&(time[i]), start[i], stop[i]) );
-        total_time += time[i];
-        total_time_sq += time[i]*time[i];
+        total_time += time[i]/n;
+        total_time_sq += (time[i]/n)*(time[i]/n);
     }
 
     // Copy result back to host
@@ -92,7 +92,7 @@ int main()
     // Print timing results
     double average_time = total_time/double(N_samples);    
     double std_dev = std::sqrt((total_time_sq - N_samples*average_time*average_time)/(N_samples-1.0)); 
-    printf("Average time to compute: %e ms, Standard Deviation: %e ms, %d samples \n", average_time, std_dev, N_samples);
+    printf("Average time to compute: %e s, Standard Deviation: %e s, %d samples \n", average_time*1e-3, std_dev*1e-3, N_samples);
     
     // Free memory
     CUDA_SAFE_CALL(cudaFree(d_a));
