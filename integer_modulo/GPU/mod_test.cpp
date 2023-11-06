@@ -2,11 +2,18 @@
 
 #include <stdio.h> // printf
 
-// Vector addition: a = a + b
-__global__ void add(int n, int *a, int *b, int *c)
+// Classic modulo
+__global__ void modulo(int n, int *a, int *b, int *c)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < n) c[i] = a[i] + b[i];
+    if (i < n) c[i] = a[i] % b[i];
+}
+
+// Witchcraft modulo
+__global__ void witchcraft_modulo(int n, int *a, int *b, int *c)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < n) c[i] = a[i] % b[i];
 }
 
 int main() 
@@ -17,7 +24,7 @@ int main()
     cudaEvent_t start[N_samples];
     cudaEvent_t stop[N_samples];
 
-    int device_id = 1;
+    int device_id = 0;
     int n = 1e6; // number of elements
     int threads_per_block = 64;
     int blocks = (n+threads_per_block-1)/threads_per_block; // Make sure > 300 to avoid tail effects
@@ -48,8 +55,8 @@ int main()
     // Initialise host vectors
     for (size_t i = 0; i < n; i++)
     {
-        a[i] = i;
-        b[i] = 2*i;
+        a[i] = 8*i+1;
+        b[i] = 2*i+1;
     }
 
     // Copy host vectors to device
@@ -60,7 +67,7 @@ int main()
     for (int i=0; i<N_samples; i++) 
     {
         CUDA_SAFE_CALL( cudaEventRecord(start[i], 0) );
-        add<<< blocks, threads_per_block>>>(n, d_a, d_b, d_c);
+        modulo<<< blocks, threads_per_block>>>(n, d_a, d_b, d_c);
         CUDA_SAFE_CALL( cudaEventRecord(stop[i], 0) );
     }
     
@@ -82,8 +89,8 @@ int main()
     CUDA_SAFE_CALL(cudaMemcpy(c, d_c, vector_size, cudaMemcpyDeviceToHost));
     
     for(int i = 0; i < n; i++)
-        if( c[i] != 3*i )
-            printf("Error in result: c[%d] = %d (expected %d) \n", i, c[i], 3*i);
+        if( c[i] != (int)(a[i] % b[i]) )
+            printf("Error in result: c[%d] = %d (expected %d) \n", i, c[i], (int)(a[i] % b[i]));
     
     // Check a few results
     printf("c[0]    = %d\n", c[0]);
