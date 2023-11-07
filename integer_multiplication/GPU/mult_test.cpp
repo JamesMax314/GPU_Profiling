@@ -2,7 +2,7 @@
 
 #include <stdio.h> // printf
 
-// Vector addition: a = a + b
+// Vector multiplication: a = a * b
 __global__ void multiply(int n, int *a, int *b, int *c)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -17,7 +17,7 @@ int main()
     cudaEvent_t start[N_samples];
     cudaEvent_t stop[N_samples];
 
-    int device_id = 1;
+    int device_id = 0;
     int n = 1e6; // number of elements
     int threads_per_block = 64;
     int blocks = (n+threads_per_block-1)/threads_per_block; // Make sure > 300 to avoid tail effects
@@ -82,7 +82,7 @@ int main()
     CUDA_SAFE_CALL(cudaMemcpy(c, d_c, vector_size, cudaMemcpyDeviceToHost));
     
     for(int i = 0; i < n; i++)
-        if( c[i] != 3*i )
+        if( c[i] != 2*i*i )
             printf("Error in result: c[%d] = %d (expected %d) \n", i, c[i], 3*i);
     
     // Check a few results
@@ -92,7 +92,7 @@ int main()
     // Print timing results
     double average_time = total_time/double(N_samples);    
     double std_dev = std::sqrt((total_time_sq - N_samples*average_time*average_time)/(N_samples-1.0)); 
-    printf("Average time to compute: %e s, Standard Deviation: %e s, %d samples \n", average_time*1e-3, std_dev*1e-3, N_samples);
+    printf("Average time to compute: %e ns, Standard Deviation: %e ns, %d samples \n", average_time*1e+6, std_dev*1e+6, N_samples);
     
     // Free memory
     CUDA_SAFE_CALL(cudaFree(d_a));
