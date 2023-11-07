@@ -1,6 +1,7 @@
 # CPU vs GPU arithmetic performance
 
 |	     |   CPU     |         | GPU       |         |
+|------------|-----------|---------|-----------|---------|
 |   Operator | Mean (ns) | SD (ns) | Mean (ns) | SD (ns) |         
 | ---------- | --------- | ------- | --------- | ------- |
 | Addition   |  0.2	 |   14	   |	0.04   | 0.25    |
