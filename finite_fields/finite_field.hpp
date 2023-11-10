@@ -17,18 +17,6 @@ template<typename T> class finite_field{
 	T value() {return this->_value;}
 	T prime() {return this->_prime;}
 
-	template<typename U> finite_field<T> operator+(U rvalue){return finite_field(_prime, (_value + rvalue));}
-	template<typename U> finite_field<T> operator+(finite_field<U> rvalue){return finite_field(_prime, (_value + rvalue._value()));}
-
-	template<typename U> finite_field<T> operator-(U rvalue){return finite_field(_prime, (_value - rvalue));}
-	template<typename U> finite_field<T> operator-(finite_field<U> rvalue){return finite_field(_prime, (_value - rvalue._value()));}
-
-	template<typename U> finite_field<T> operator*(U rvalue){return finite_field(_prime, (_value * rvalue));}
-	template<typename U> finite_field<T> operator*(finite_field<U> rvalue){return finite_field(_prime, (_value * rvalue._value()));}
-
-	template<typename U> finite_field<T> operator/(U rvalue){return finite_field(_prime, (_value / rvalue));}
-	template<typename U> finite_field<T> operator/(finite_field<U> rvalue){return finite_field(_prime, (_value / rvalue._value()));}
-
 	template<typename U> finite_field<T> pow(U rvalue){
 		T newVal = _value;
 		for (int i=0; i<rvalue-1; i++) {
@@ -86,6 +74,39 @@ template<typename T> class finite_field{
 		return *this;}
 };
 
+//Define operators for primites/other types that allows for e.g. int + finite_field = finite_field
+template<typename T> inline finite_field<T> operator+(finite_field<T> lvalue, finite_field<T> rvalue){
+		finite_field result(lvalue.prime());
+		result += rvalue;
+		return result;
+}
+template<typename T> inline finite_field<T> operator+(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() + rvalue));}
+template<typename T> inline finite_field<T> operator+(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue + rvalue.value()));}
+
+template<typename T> inline finite_field<T> operator-(finite_field<T> lvalue, finite_field<T> rvalue){
+	finite_field result(lvalue.prime());
+	result -= rvalue;
+	return result;
+}
+template<typename T> inline finite_field<T> operator-(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() - rvalue));}
+template<typename T> inline finite_field<T> operator-(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue - rvalue.value()));}
+
+template<typename T> inline finite_field<T> operator*(finite_field<T> lvalue, finite_field<T> rvalue){
+	finite_field result(lvalue.prime());
+	result *= rvalue;
+	return result;
+}
+template<typename T> inline finite_field<T> operator*(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() * rvalue));}
+template<typename T> inline finite_field<T> operator*(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue * rvalue.value()));}
+
+template<typename T> inline finite_field<T> operator/(finite_field<T> lvalue, finite_field<T> rvalue){
+	finite_field result(lvalue.prime());
+	result /= rvalue;
+	return result;
+}
+template<typename T> inline finite_field<T> operator/(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() / rvalue));}
+template<typename T> inline finite_field<T> operator/(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue / rvalue.value()));}
+
 class black_box {
 	private:
 
@@ -93,7 +114,6 @@ class black_box {
 	black_box() {};
 
 	// Called by cuda transform to do operation at many different values
-	template<typename T>
 
 	// finite_field<T> operator()(finite_field<T>& rvalue) 
 	// {
@@ -103,11 +123,18 @@ class black_box {
 	// 	}
 	// 	return rvalue.pow(7);
 	// };
+	
+	template<typename T>
+	finite_field<T> polynomial(finite_field<T>& rvalue){
+		finite_field<T> result = rvalue + 5*rvalue.pow(3) + 10;
+		return result;
+	}
 
+	template<typename T>
 	finite_field<T> operator()(finite_field<T>& rvalue) 
 	{
-		finite_field<T> result(rvalue.prime(), 0);
-		result = rvalue;
-		return rvalue.pow(7);
+		finite_field<T> result(7); //Member of Z_7
+		result = polynomial(rvalue);
+		return result;
 	};
 };
