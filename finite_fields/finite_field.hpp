@@ -35,7 +35,22 @@ template<typename T> class finite_field{
 		return finite_field(_prime, newVal);
 	}
 
+	template<typename U> finite_field<T> pow(finite_field<U> rvalue){
+
+		U exponent = rvalue.value();
+
+		T newVal = std::pow(_value, exponent);
+
+		
+		return finite_field(_prime, newVal);
+	}
+
 	template<typename U> finite_field<T>& operator+=(U rvalue){
+		this->_value = (_value + rvalue)%_prime;
+		return *this;
+	}
+
+	template<typename U> finite_field<T>& operator+=(finite_field<U> rvalue){
 		this->_value = (_value + rvalue.value())%_prime;
 		return *this;
 	}
@@ -45,8 +60,18 @@ template<typename T> class finite_field{
 		return *this;
 	}
 
+	template<typename U> finite_field<T>& operator-=(finite_field<U> rvalue){
+		this->_value = (_value - rvalue.value())%_prime;
+		return *this;
+	}
+
 	template<typename U> finite_field<T>& operator*=(U rvalue){
 		this->_value = (_value * rvalue)%_prime;
+		return *this;
+	}
+
+	template<typename U> finite_field<T>& operator*=(finite_field<U> rvalue){
+		this->_value = (_value * rvalue.value())%_prime;
 		return *this;
 	}
 
@@ -54,6 +79,9 @@ template<typename T> class finite_field{
 		_value = (rvalue)%_prime;
 		return *this;}
 
+	template<typename U> finite_field<T>& operator=(finite_field<U> rvalue){
+		_value = (rvalue.value())%_prime;
+		return *this;}
 };
 
 class black_box {
