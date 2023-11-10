@@ -63,5 +63,12 @@ class black_box {
 	// Called by cuda transform to do operation at many different values
 	template<typename T>
 
-	finite_field<T> operator()(std::vector<finite_field<T>>& rvalues) {return rvalues[0].pow(7) + rvalues[1].pow(8);};
+	finite_field<T> operator()(finite_field<T>& rvalue) 
+	{
+		finite_field<T> result(rvalue.prime(), 0);
+		for (int i=1; i<100; i++) {
+			result += rvalue.pow(i)*i;
+		}
+		return rvalue.pow(7);
+	};
 };

@@ -12,11 +12,14 @@ int main(){
 	// 	ff += 1;
 	// 	printf("%i \n", ff.value);
 	// }
-	std::vector<finite_field<int>> vec;
-	vec.emplace_back(ff);
-	vec.emplace_back(ff2);
+	int size = 10000;
+	std::vector<finite_field<int>> vec(size);
+	for (int i=0; i<size; i++) {
+		vec.at(i) = i+10;
+	}
 
-	printf("%i \n", bb(vec).value);
+
+	printf("%i \n", bb(ff).value);
 	
 	return 0;
 }
