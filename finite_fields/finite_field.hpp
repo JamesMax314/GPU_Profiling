@@ -10,6 +10,8 @@ template<typename T> class finite_field{
 	T _value, _prime;
 
 	public:
+	finite_field() : _value(0), _prime(2) {}
+	finite_field(T prime) : _value(0), _prime(prime) {}
 	finite_field(T prime, T value) : _value(value%prime), _prime(prime) {}
 
 	T value() {return this->_value;}
