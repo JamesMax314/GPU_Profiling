@@ -13,13 +13,20 @@ int main(){
 	// 	printf("%i \n", ff.value);
 	// }
 	int size = 10000;
-	std::vector<finite_field<int>> vec(size);
+	std::vector<finite_field<int>> vec;
+	std::vector<finite_field<int>> vecOut;
 	for (int i=0; i<size; i++) {
-		vec.at(i) = i+10;
+		vec.emplace_back(13, i+10);
+		vecOut.emplace_back(13, 0);
 	}
 
+	std::transform(vec.begin(), vec.end(), vecOut.begin(), bb);
+	
+	for (int i=0; i<size; i++) {
+		printf("%d \n", vecOut[i]);
+	}
 
-	printf("%i \n", bb(ff).value);
+	// printf("%i \n", bb(ff).value);
 	
 	return 0;
 }

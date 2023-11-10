@@ -1,58 +1,60 @@
 #include <vector>
 #include <cmath>
 
+// template<typename U> U getVal(U rvalue) {return rvalue;};
+
+// template<typename U> U getVal(finite_field<U> rvalue) {return rvalue._value;};
+
 template<typename T> class finite_field{
 	private:
-	T value, prime;
+	T _value, _prime;
 
 	public:
-	finite_field(T prime, T value) : value(value%prime), prime(prime) {}
+	finite_field(T prime, T value) : _value(value%prime), _prime(prime) {}
 
-	template<typename U> U value() {return this.value;}
-	template<typename U> U prime() {return this.prime;}
+	T value() {return this->_value;}
+	T prime() {return this->_prime;}
 
-	template<typename U> finite_field<T> operator+(U rvalue){return finite_field(prime, (value + rvalue));}
-	template<typename U> finite_field<T> operator+(finite_field<U> rvalue){return finite_field(prime, (value + rvalue.value()));}
+	template<typename U> finite_field<T> operator+(U rvalue){return finite_field(_prime, (_value + rvalue));}
+	template<typename U> finite_field<T> operator+(finite_field<U> rvalue){return finite_field(_prime, (_value + rvalue._value()));}
 
-	template<typename U> finite_field<T> operator-(U rvalue){return finite_field(prime, (value - getVal(rvalue)));}
-	template<typename U> finite_field<T> operator-(finite_field<U> rvalue){return finite_field(prime, (value - rvalue.value()));}
+	template<typename U> finite_field<T> operator-(U rvalue){return finite_field(_prime, (_value - rvalue));}
+	template<typename U> finite_field<T> operator-(finite_field<U> rvalue){return finite_field(_prime, (_value - rvalue._value()));}
 
-	template<typename U> finite_field<T> operator*(U rvalue){return finite_field(prime, (value * getVal(rvalue)));}
-	template<typename U> finite_field<T> operator*(finite_field<U> rvalue){return finite_field(prime, (value * rvalue.value()));}
+	template<typename U> finite_field<T> operator*(U rvalue){return finite_field(_prime, (_value * rvalue));}
+	template<typename U> finite_field<T> operator*(finite_field<U> rvalue){return finite_field(_prime, (_value * rvalue._value()));}
 
-	template<typename U> finite_field<T> operator/(U rvalue){return finite_field(prime, (value / getVal(rvalue)));}
-	template<typename U> finite_field<T> operator/(finite_field<U> rvalue){return finite_field(prime, (value / rvalue.value()));}
+	template<typename U> finite_field<T> operator/(U rvalue){return finite_field(_prime, (_value / rvalue));}
+	template<typename U> finite_field<T> operator/(finite_field<U> rvalue){return finite_field(_prime, (_value / rvalue._value()));}
 
 	template<typename U> finite_field<T> pow(U rvalue){
-		T newVal = value;
-		for (int i=0; i<getVal(rvalue)-1; i++) {
-			newVal *= value;
+		T newVal = _value;
+		for (int i=0; i<rvalue-1; i++) {
+			newVal *= _value;
 		}
-		return finite_field(prime, newVal);
+		return finite_field(_prime, newVal);
 	}
 
 	template<typename U> finite_field<T>& operator+=(U rvalue){
-		this->value = (value + getVal(rvalue))%prime;
+		this->_value = (_value + rvalue.value())%_prime;
 		return *this;
 	}
 
 	template<typename U> finite_field<T>& operator-=(U rvalue){
-		this->value = (value - getVal(rvalue))%prime;
+		this->_value = (_value - rvalue)%_prime;
 		return *this;
 	}
 
 	template<typename U> finite_field<T>& operator*=(U rvalue){
-		this->value = (value * getVal(rvalue))%prime;
+		this->_value = (_value * rvalue)%_prime;
 		return *this;
 	}
 
-	template<typename U> finite_field<T> operator=(U rvalue){value = (getVal(rvalue))%prime;}
+	template<typename U> finite_field<T>& operator=(U rvalue){
+		_value = (rvalue)%_prime;
+		return *this;}
 
 };
-
-template<typename U> U getVal(U rvalue) {return rvalue;};
-
-template<typename U> U getVal(finite_field<U> rvalue) {return rvalue.value;};
 
 class black_box {
 	private:
@@ -63,12 +65,19 @@ class black_box {
 	// Called by cuda transform to do operation at many different values
 	template<typename T>
 
+	// finite_field<T> operator()(finite_field<T>& rvalue) 
+	// {
+	// 	finite_field<T> result(rvalue.prime(), 0);
+	// 	for (int i=1; i<100; i++) {
+	// 		result += rvalue.pow(i)*i;
+	// 	}
+	// 	return rvalue.pow(7);
+	// };
+
 	finite_field<T> operator()(finite_field<T>& rvalue) 
 	{
 		finite_field<T> result(rvalue.prime(), 0);
-		for (int i=1; i<100; i++) {
-			result += rvalue.pow(i)*i;
-		}
+		result = rvalue;
 		return rvalue.pow(7);
 	};
 };
