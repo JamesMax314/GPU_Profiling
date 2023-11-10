@@ -2,17 +2,26 @@
 #include <cmath>
 
 template<typename T> class finite_field{
+	private:
+	T value, prime;
 
 	public:
 	finite_field(T prime, T value) : value(value%prime), prime(prime) {}
 
-	template<typename U> U getVal(U rvalue) {return rvalue;};
-	template<typename U> U getVal(finite_field<U> rvalue) {return rvalue.value;};
+	template<typename U> U value() {return this.value;}
+	template<typename U> U prime() {return this.prime;}
 
-	template<typename U> finite_field<T> operator+(U rvalue){return finite_field(prime, (value + getVal(rvalue)));}
+	template<typename U> finite_field<T> operator+(U rvalue){return finite_field(prime, (value + rvalue));}
+	template<typename U> finite_field<T> operator+(finite_field<U> rvalue){return finite_field(prime, (value + rvalue.value()));}
+
 	template<typename U> finite_field<T> operator-(U rvalue){return finite_field(prime, (value - getVal(rvalue)));}
+	template<typename U> finite_field<T> operator-(finite_field<U> rvalue){return finite_field(prime, (value - rvalue.value()));}
+
 	template<typename U> finite_field<T> operator*(U rvalue){return finite_field(prime, (value * getVal(rvalue)));}
+	template<typename U> finite_field<T> operator*(finite_field<U> rvalue){return finite_field(prime, (value * rvalue.value()));}
+
 	template<typename U> finite_field<T> operator/(U rvalue){return finite_field(prime, (value / getVal(rvalue)));}
+	template<typename U> finite_field<T> operator/(finite_field<U> rvalue){return finite_field(prime, (value / rvalue.value()));}
 
 	template<typename U> finite_field<T> pow(U rvalue){
 		T newVal = value;
@@ -39,9 +48,11 @@ template<typename T> class finite_field{
 
 	template<typename U> finite_field<T> operator=(U rvalue){value = (getVal(rvalue))%prime;}
 
-	T value, prime;
 };
 
+template<typename U> U getVal(U rvalue) {return rvalue;};
+
+template<typename U> U getVal(finite_field<U> rvalue) {return rvalue.value;};
 
 class black_box {
 	private:
@@ -51,5 +62,6 @@ class black_box {
 
 	// Called by cuda transform to do operation at many different values
 	template<typename T>
+
 	finite_field<T> operator()(std::vector<finite_field<T>>& rvalues) {return rvalues[0].pow(7) + rvalues[1].pow(8);};
 };
