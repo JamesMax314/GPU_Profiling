@@ -1,5 +1,6 @@
 #include <vector>
 #include <cmath>
+#include "../common/cuda_safe_call.hpp"
 
 // template<typename U> U getVal(U rvalue) {return rvalue;};
 
@@ -10,14 +11,14 @@ template<typename T> class finite_field{
 	T _value, _prime;
 
 	public:
-	finite_field() : _value(0), _prime(2) {}
-	finite_field(T prime) : _value(0), _prime(prime) {}
-	finite_field(T prime, T value) : _value(value%prime), _prime(prime) {}
+	__host__ __device__ finite_field() : _value(0), _prime(2) {}
+	__host__ __device__ finite_field(T prime) : _value(0), _prime(prime) {}
+	__host__ __device__ finite_field(T prime, T value) : _value(value%prime), _prime(prime) {}
 
-	T value() {return this->_value;}
-	T prime() {return this->_prime;}
+	__host__ __device__ T value() {return this->_value;}
+	__host__ __device__ T prime() {return this->_prime;}
 
-	template<typename U> finite_field<T> pow(U rvalue){
+	template<typename U> __host__ __device__ finite_field<T> pow(U rvalue){
 		T newVal = _value;
 		for (int i=0; i<rvalue-1; i++) {
 			newVal *= _value;
@@ -25,7 +26,7 @@ template<typename T> class finite_field{
 		return finite_field(_prime, newVal);
 	}
 
-	template<typename U> finite_field<T> pow(finite_field<U> rvalue){
+	template<typename U> __host__ __device__ finite_field<T> pow(finite_field<U> rvalue){
 
 		U exponent = rvalue.value();
 
@@ -35,103 +36,93 @@ template<typename T> class finite_field{
 		return finite_field(_prime, newVal);
 	}
 
-	template<typename U> finite_field<T>& operator+=(U rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator+=(U rvalue){
 		this->_value = (_value + rvalue)%_prime;
 		return *this;
 	}
 
-	template<typename U> finite_field<T>& operator+=(finite_field<U> rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator+=(finite_field<U> rvalue){
 		this->_value = (_value + rvalue.value())%_prime;
 		return *this;
 	}
 
-	template<typename U> finite_field<T>& operator-=(U rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator-=(U rvalue){
 		this->_value = (_value - rvalue)%_prime;
 		return *this;
 	}
 
-	template<typename U> finite_field<T>& operator-=(finite_field<U> rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator-=(finite_field<U> rvalue){
 		this->_value = (_value - rvalue.value())%_prime;
 		return *this;
 	}
 
-	template<typename U> finite_field<T>& operator*=(U rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator*=(U rvalue){
 		this->_value = (_value * rvalue)%_prime;
 		return *this;
 	}
 
-	template<typename U> finite_field<T>& operator*=(finite_field<U> rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator*=(finite_field<U> rvalue){
 		this->_value = (_value * rvalue.value())%_prime;
 		return *this;
 	}
 
-	template<typename U> finite_field<T>& operator=(U rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator=(U rvalue){
 		_value = (rvalue)%_prime;
 		return *this;}
 
-	template<typename U> finite_field<T>& operator=(finite_field<U> rvalue){
+	template<typename U> __host__ __device__ finite_field<T>& operator=(finite_field<U> rvalue){
 		_value = (rvalue.value())%_prime;
 		return *this;}
 };
 
 //Define operators for primites/other types that allows for e.g. int + finite_field = finite_field
-template<typename T> inline finite_field<T> operator+(finite_field<T> lvalue, finite_field<T> rvalue){
-		finite_field result(lvalue.prime());
+template<typename T> inline __host__ __device__ finite_field<T> operator+(finite_field<T> lvalue, finite_field<T> rvalue){
+		finite_field<T> result(lvalue.prime());
 		result += rvalue;
 		return result;
 }
-template<typename T> inline finite_field<T> operator+(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() + rvalue));}
-template<typename T> inline finite_field<T> operator+(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue + rvalue.value()));}
+template<typename T> inline __host__ __device__ finite_field<T> operator+(finite_field<T> lvalue, T rvalue){return finite_field<T>(lvalue.prime(), (lvalue.value() + rvalue));}
+template<typename T> inline __host__ __device__ finite_field<T> operator+(T lvalue, finite_field<T> rvalue){return finite_field<T>(rvalue.prime(), (lvalue + rvalue.value()));}
 
-template<typename T> inline finite_field<T> operator-(finite_field<T> lvalue, finite_field<T> rvalue){
-	finite_field result(lvalue.prime());
+template<typename T> inline __host__ __device__ finite_field<T> operator-(finite_field<T> lvalue, finite_field<T> rvalue){
+	finite_field<T> result(lvalue.prime());
 	result -= rvalue;
 	return result;
 }
-template<typename T> inline finite_field<T> operator-(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() - rvalue));}
-template<typename T> inline finite_field<T> operator-(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue - rvalue.value()));}
+template<typename T> inline __host__ __device__ finite_field<T> operator-(finite_field<T> lvalue, T rvalue){return finite_field<T>(lvalue.prime(), (lvalue.value() - rvalue));}
+template<typename T> inline __host__ __device__ finite_field<T> operator-(T lvalue, finite_field<T> rvalue){return finite_field<T>(rvalue.prime(), (lvalue - rvalue.value()));}
 
-template<typename T> inline finite_field<T> operator*(finite_field<T> lvalue, finite_field<T> rvalue){
-	finite_field result(lvalue.prime());
+template<typename T> inline __host__ __device__ finite_field<T> operator*(finite_field<T> lvalue, finite_field<T> rvalue){
+	finite_field<T> result(lvalue.prime());
 	result *= rvalue;
 	return result;
 }
-template<typename T> inline finite_field<T> operator*(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() * rvalue));}
-template<typename T> inline finite_field<T> operator*(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue * rvalue.value()));}
+template<typename T> inline __host__ __device__ finite_field<T> operator*(finite_field<T> lvalue, T rvalue){return finite_field<T>(lvalue.prime(), (lvalue.value() * rvalue));}
+template<typename T> inline __host__ __device__ finite_field<T> operator*(T lvalue, finite_field<T> rvalue){return finite_field<T>(rvalue.prime(), (lvalue * rvalue.value()));}
 
-template<typename T> inline finite_field<T> operator/(finite_field<T> lvalue, finite_field<T> rvalue){
-	finite_field result(lvalue.prime());
+template<typename T> inline __host__ __device__ finite_field<T> operator/(finite_field<T> lvalue, finite_field<T> rvalue){
+	finite_field<T> result(lvalue.prime());
 	result /= rvalue;
 	return result;
 }
-template<typename T> inline finite_field<T> operator/(finite_field<T> lvalue, T rvalue){return finite_field(lvalue.prime(), (lvalue.value() / rvalue));}
-template<typename T> inline finite_field<T> operator/(T lvalue, finite_field<T> rvalue){return finite_field(rvalue.prime(), (lvalue / rvalue.value()));}
+template<typename T> inline __host__ __device__ finite_field<T> operator/(finite_field<T> lvalue, T rvalue){return finite_field<T> (lvalue.prime(), (lvalue.value() / rvalue));}
+template<typename T> inline __host__ __device__ finite_field<T> operator/(T lvalue, finite_field<T> rvalue){return finite_field<T> (rvalue.prime(), (lvalue / rvalue.value()));}
 
-class black_box {
-	private:
 
-	public:
-	black_box() {};
+enum ComputeMethod {
+	CPU,
+	GPU
+};
 
-	// Called by cuda transform to do operation at many different values
-
-	// finite_field<T> operator()(finite_field<T>& rvalue) 
-	// {
-	// 	finite_field<T> result(rvalue.prime(), 0);
-	// 	for (int i=1; i<100; i++) {
-	// 		result += rvalue.pow(i)*i;
-	// 	}
-	// 	return rvalue.pow(7);
-	// };
-	
+struct black_box {
 	template<typename T>
-	finite_field<T> polynomial(finite_field<T>& rvalue){
+	__host__ __device__ finite_field<T> polynomial(finite_field<T>& rvalue){
 		finite_field<T> result = rvalue + 5*rvalue.pow(3) + 10;
 		return result;
 	}
 
 	template<typename T>
-	finite_field<T> operator()(finite_field<T>& rvalue) 
+	__host__ __device__ finite_field<T> operator()(finite_field<T>& rvalue) 
 	{
 		finite_field<T> result(7); //Member of Z_7
 		result = polynomial(rvalue);
