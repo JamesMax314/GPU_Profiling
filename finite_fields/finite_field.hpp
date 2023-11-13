@@ -18,22 +18,15 @@ template<typename T> class finite_field{
 	__host__ __device__ T value() {return this->_value;}
 	__host__ __device__ T prime() {return this->_prime;}
 
-	template<typename U> __host__ __device__ finite_field<T> pow(U rvalue){
-		T newVal = _value;
-		for (int i=0; i<rvalue-1; i++) {
-			newVal *= _value;
-		}
-		return finite_field(_prime, newVal);
+	template<typename U> __host__ __device__ finite_field<T> pow(U exponent){
+		T newVal = std::pow(_value, exponent);
+		return finite_field<T>(_prime, newVal);
 	}
 
 	template<typename U> __host__ __device__ finite_field<T> pow(finite_field<U> rvalue){
-
 		U exponent = rvalue.value();
-
 		T newVal = std::pow(_value, exponent);
-
-		
-		return finite_field(_prime, newVal);
+		return finite_field<T>(_prime, newVal);
 	}
 
 	template<typename U> __host__ __device__ finite_field<T>& operator+=(U rvalue){
@@ -117,7 +110,11 @@ enum ComputeMethod {
 struct black_box {
 	template<typename T>
 	__host__ __device__ finite_field<T> polynomial(finite_field<T>& rvalue){
-		finite_field<T> result = rvalue + 5*rvalue.pow(3) + 10;
+		finite_field<T> result(rvalue.prime());
+		int n = 5000;
+		for (int i=0; i<n; i++) {
+			result += i*rvalue.pow(i/n)/8;
+		}
 		return result;
 	}
 

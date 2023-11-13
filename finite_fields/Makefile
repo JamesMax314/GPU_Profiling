@@ -1,7 +1,7 @@
 NAME = main
 
 CXX = nvcc
-CXXFLAGS = -std=c++14 -rdc=true -x cu
+CXXFLAGS = -std=c++17 -O3 -rdc=true -x cu
 
 .DEFAULT_GOAL := $(NAME)
 
