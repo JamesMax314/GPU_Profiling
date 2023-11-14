@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <cmath>
 #include "../common/cuda_safe_call.hpp"
@@ -107,13 +108,22 @@ enum ComputeMethod {
 	GPU
 };
 
-struct black_box {
+class BlackBox {
+	private:
+	int _degree;
+
+	public:
+	BlackBox() : _degree(1) { }
+	BlackBox(int degree) : _degree(degree) { }
+
+	int degree() {return this->_degree;}
+	void set_degree(int degree) {this->_degree = degree;}
+
 	template<typename T>
 	__host__ __device__ finite_field<T> polynomial(finite_field<T>& rvalue){
 		finite_field<T> result(rvalue.prime());
-		int n = 5000;
-		for (int i=0; i<n; i++) {
-			result += i*rvalue.pow(i/n)/8;
+		for (int i=0; i<_degree; i++) {
+			result += i*rvalue.pow(i/_degree)/8;
 		}
 		return result;
 	}
