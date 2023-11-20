@@ -85,7 +85,6 @@ template<typename T> inline __host__ __device__ finite_field<T> operator+(finite
 template<typename T> inline __host__ __device__ finite_field<T> operator+(T lvalue, finite_field<T> rvalue){return finite_field<T>(rvalue.prime(), (lvalue + rvalue.value()));}
 
 template<typename T> inline __host__ __device__ constexpr finite_field<T> operator-(finite_field<T> lvalue, finite_field<T> rvalue){
-//(_value + (_prime - rvalue.value()))%_prime;
 
 	finite_field<T> result = lvalue;
 	result -= rvalue;
