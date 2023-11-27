@@ -12,12 +12,12 @@ template<typename T> class finite_field{
 	T _value, _prime;
 
 	public:
-	__host__ __device__ finite_field() : _value(0), _prime(2) {}
-	__host__ __device__ finite_field(T prime) : _value(0), _prime(prime) {}
-	__host__ __device__ finite_field(T prime, T value) : _value(value%prime), _prime(prime) {}
+	__host__ __device__ constexpr finite_field() : _value(0), _prime(2) {}
+	__host__ __device__ constexpr finite_field(T prime) : _value(0), _prime(prime) {}
+	__host__ __device__ constexpr finite_field(T prime, T value) : _value(value%prime), _prime(prime) {}
 
-	__host__ __device__ T value() {return this->_value;}
-	__host__ __device__ T prime() {return this->_prime;}
+	__host__ __device__ constexpr T value() {return this->_value;}
+	__host__ __device__ constexpr T prime() {return this->_prime;}
 
 	template<typename U> __host__ __device__ finite_field<T> pow(U exponent){
 		T newVal = std::pow(_value, exponent);
@@ -41,12 +41,12 @@ template<typename T> class finite_field{
 	}
 
 	template<typename U> __host__ __device__ finite_field<T>& operator-=(U rvalue){
-		this->_value = (_value - rvalue)%_prime;
+		this->_value = (_value - rvalue + _prime)%_prime;
 		return *this;
 	}
 
-	template<typename U> __host__ __device__ finite_field<T>& operator-=(finite_field<U> rvalue){
-		this->_value = (_value - rvalue.value())%_prime;
+	template<typename U> __host__ __device__ constexpr finite_field<T>& operator-=(finite_field<U> rvalue){
+		this->_value = (_value + (_prime - rvalue.value()))%_prime;
 		return *this;
 	}
 
@@ -78,8 +78,9 @@ template<typename T> inline __host__ __device__ finite_field<T> operator+(finite
 template<typename T> inline __host__ __device__ finite_field<T> operator+(finite_field<T> lvalue, T rvalue){return finite_field<T>(lvalue.prime(), (lvalue.value() + rvalue));}
 template<typename T> inline __host__ __device__ finite_field<T> operator+(T lvalue, finite_field<T> rvalue){return finite_field<T>(rvalue.prime(), (lvalue + rvalue.value()));}
 
-template<typename T> inline __host__ __device__ finite_field<T> operator-(finite_field<T> lvalue, finite_field<T> rvalue){
-	finite_field<T> result(lvalue.prime());
+template<typename T> inline __host__ __device__ constexpr finite_field<T> operator-(finite_field<T> lvalue, finite_field<T> rvalue){
+
+	finite_field<T> result = lvalue;
 	result -= rvalue;
 	return result;
 }
