@@ -63,7 +63,7 @@ template<typename T> class finite_field{
 		using S = typename std::make_signed<T>::type;
 		double x = static_cast<double>(_value);
 		T c = static_cast<T>( (x*rvalue.value()) / _prime );
-		S r = static_cast<S>( (_value*rvalue) - (c*_prime) ) % static_cast<S>(_prime);
+		S r = static_cast<S>( (_value*rvalue.value()) - (c*_prime) ) % static_cast<S>(_prime);
 		this->_value = r < 0 ? static_cast<T>(static_cast<T>(r)+_prime) : static_cast<T>(r);
 		return *this;
 	}
@@ -100,21 +100,24 @@ template<typename T> inline __host__ __device__ finite_field<T> operator*(finite
 	double x = static_cast<double>(lvalue.value());
 	T c = static_cast<T>( (x*rvalue.value()) / lvalue.prime() );
 	S r = static_cast<S>( (lvalue.value()*rvalue.value()) - (c*lvalue.prime()) ) % static_cast<S>(lvalue.prime());
-	return r < 0 ? static_cast<T>(static_cast<T>(r)+lvalue.prime()) : static_cast<T>(r);
+	T result = r < 0 ? static_cast<T>(static_cast<T>(r)+lvalue.prime()) : static_cast<T>(r);
+	return finite_field<T>(lvalue.prime(), result);
 }
 template<typename T> inline __host__ __device__ finite_field<T> operator*(finite_field<T> lvalue, T rvalue){
 	using S = typename std::make_signed<T>::type;
 	double x = static_cast<double>(lvalue.value());
 	T c = static_cast<T>( (x*rvalue) / lvalue.prime() );
 	S r = static_cast<S>( (lvalue.value()*rvalue) - (c*lvalue.prime()) ) % static_cast<S>(lvalue.prime());
-	return r < 0 ? static_cast<T>(static_cast<T>(r)+lvalue.prime()) : static_cast<T>(r);
+	T result = r < 0 ? static_cast<T>(static_cast<T>(r)+lvalue.prime()) : static_cast<T>(r);
+	return finite_field<T>(lvalue.prime(), result);
 }
 template<typename T> inline __host__ __device__ finite_field<T> operator*(T lvalue, finite_field<T> rvalue){
 	using S = typename std::make_signed<T>::type;
 	double x = static_cast<double>(lvalue);
 	T c = static_cast<T>( (x*rvalue.value()) / rvalue.prime() );
 	S r = static_cast<S>( (lvalue*rvalue.value()) - (c*rvalue.prime()) ) % static_cast<S>(rvalue.prime());
-	return r < 0 ? static_cast<T>(static_cast<T>(r)+rvalue.prime()) : static_cast<T>(r);
+	T result = r < 0 ? static_cast<T>(static_cast<T>(r)+rvalue.prime()) : static_cast<T>(r);
+	return finite_field<T>(rvalue.prime(), result);
 }
 
 template<typename T> inline __host__ __device__ finite_field<T> operator/(finite_field<T> lvalue, finite_field<T> rvalue){
