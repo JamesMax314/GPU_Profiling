@@ -51,7 +51,11 @@ template<typename T> class finite_field{
 	}
 
 	template<typename U> __host__ __device__ finite_field<T>& operator*=(U rvalue){
-		this->_value = (_value * rvalue)%_prime;
+		using S = typename std::make_signed<T>::type;
+		double x = static_cast<double>(_value);
+		T c = static_cast<T>( (x*rvalue) / prime );
+		S r = static_cast<S>( (_value*rvalue) - (c*prime) ) % static_cast<S>(prime);
+		this->_value r < 0 ? static_cast<T>(static_cast<U>(r)+prime) : static_cast<T>(r);
 		return *this;
 	}
 
